@@ -1,0 +1,9 @@
+# Core harness has ZERO runtime dependencies — stdlib only (subprocess, math, json).
+# That is deliberate: the sandbox and the pass@k estimator should not need a
+# third-party stack to be trustworthy.
+
+# Optional: only needed for the real (non-stub) provider.
+# openai>=1.0
+
+# Optional: test runner.
+# pytest>=7.0

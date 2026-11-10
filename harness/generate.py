@@ -72,9 +72,42 @@ class StubProvider:
 
 
 # ------------------------------------------------------------------------- openai
+def _load_dotenv_if_present() -> None:
+    """Best-effort load of a local .env, so the API key need not be typed on the
+    command line (which leaks it into shell history).
+
+    Kept OPTIONAL on purpose: the core harness has zero runtime deps. If python-dotenv
+    is installed it is used; otherwise we fall back to a tiny built-in parser; if there
+    is no .env at all, we do nothing and rely on a real environment variable. Either
+    way the key only ever comes from the environment — never from code, never committed.
+    """
+    env_path = ".env"
+    if not os.path.exists(env_path):
+        return
+    try:
+        from dotenv import load_dotenv  # optional dependency
+
+        load_dotenv(env_path)
+        return
+    except Exception:
+        pass
+    # Minimal fallback parser (KEY=VALUE lines) so .env works without python-dotenv.
+    try:
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, _, value = line.partition("=")
+                os.environ.setdefault(key.strip(), value.strip().strip("'\""))
+    except Exception:
+        pass
+
+
 class OpenAIProvider:
     """Real sampling from an OpenAI chat model. Lazily imported so the lab runs
-    without the SDK. Set OPENAI_API_KEY and pass --provider openai."""
+    without the SDK. The API key is read from the environment (or a gitignored .env)
+    as OPENAI_API_KEY — never hardcoded. Pass --provider openai."""
 
     def __init__(self, model: str = "gpt-4o-mini", temperature: float = 0.8):
         self._model = model
@@ -85,7 +118,15 @@ class OpenAIProvider:
         if self._client is None:
             from openai import OpenAI  # lazy
 
-            self._client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+            _load_dotenv_if_present()
+            try:
+                api_key = os.environ["OPENAI_API_KEY"]
+            except KeyError:
+                raise RuntimeError(
+                    "OPENAI_API_KEY is not set. Put it in a .env file "
+                    "(copy .env.example) or export it in your shell."
+                )
+            self._client = OpenAI(api_key=api_key)
 
     def sample(self, prompt: str, n: int) -> list[str]:
         self._ensure()

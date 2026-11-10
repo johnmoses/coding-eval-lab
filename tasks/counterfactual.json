@@ -1,0 +1,129 @@
+[
+  {
+    "task_id": "merge_intervals_strict",
+    "variant_of": "merge_intervals",
+    "twist": "touching endpoints must NOT merge (canonical solution uses <=, this needs <)",
+    "prompt": "Write a function `merge_intervals_strict(intervals)` that merges overlapping intervals and returns a sorted list of non-overlapping intervals. Each interval is a [start, end] list. Unlike the usual version, intervals that only TOUCH at an endpoint (e.g. [1,4] and [4,5]) do NOT overlap and must stay separate. Only intervals that share interior points are merged.",
+    "entry_point": "merge_intervals_strict",
+    "tests": [
+      "assert merge_intervals_strict([[1,3],[2,6],[8,10],[15,18]]) == [[1,6],[8,10],[15,18]]",
+      "assert merge_intervals_strict([[1,4],[4,5]]) == [[1,4],[4,5]]",
+      "assert merge_intervals_strict([]) == []",
+      "assert merge_intervals_strict([[1,4],[2,3]]) == [[1,4]]",
+      "assert merge_intervals_strict([[1,4],[0,4]]) == [[0,4]]",
+      "assert merge_intervals_strict([[1,4],[0,0]]) == [[0,0],[1,4]]",
+      "assert merge_intervals_strict([[1,2],[2,3],[3,4]]) == [[1,2],[2,3],[3,4]]",
+      "assert merge_intervals_strict([[1,5],[2,3],[5,6]]) == [[1,5],[5,6]]"
+    ],
+    "reference": "def merge_intervals_strict(intervals):\n    if not intervals:\n        return []\n    s = sorted(intervals, key=lambda x: x[0])\n    out = [s[0][:]]\n    for start, end in s[1:]:\n        if start < out[-1][1]:\n            out[-1][1] = max(out[-1][1], end)\n        else:\n            out.append([start, end])\n    return out"
+  },
+  {
+    "task_id": "atoi16",
+    "variant_of": "atoi",
+    "twist": "clamp to 16-bit signed range instead of the canonical 32-bit constants",
+    "prompt": "Write a function `atoi16(s)` that converts a string to a 16-bit signed integer like C's atoi. Skip leading whitespace, handle an optional leading '+' or '-', read digits until a non-digit, and clamp the result to the 16-bit signed range [-32768, 32767]. Return 0 if there is no valid conversion.",
+    "entry_point": "atoi16",
+    "tests": [
+      "assert atoi16('42') == 42",
+      "assert atoi16('   -42') == -42",
+      "assert atoi16('4193 with words') == 4193",
+      "assert atoi16('words and 987') == 0",
+      "assert atoi16('-91283472332') == -32768",
+      "assert atoi16('40000') == 32767",
+      "assert atoi16('32768') == 32767",
+      "assert atoi16('-32769') == -32768",
+      "assert atoi16('+1') == 1",
+      "assert atoi16('') == 0"
+    ],
+    "reference": "def atoi16(s):\n    s = s.lstrip()\n    if not s:\n        return 0\n    i, sign = 0, 1\n    if s[0] in '+-':\n        sign = -1 if s[0] == '-' else 1\n        i = 1\n    num = 0\n    while i < len(s) and s[i].isdigit():\n        num = num * 10 + int(s[i])\n        i += 1\n    num *= sign\n    return max(-32768, min(32767, num))"
+  },
+  {
+    "task_id": "fizzbuzz_7_11",
+    "variant_of": "fizzbuzz",
+    "twist": "different divisors (7 and 11) than the memorized 3 and 5",
+    "prompt": "Write a function `fizzbuzz_7_11(n)` that returns 'FizzBuzz' if n is divisible by both 7 and 11, 'Fizz' if divisible by 7, 'Buzz' if divisible by 11, otherwise the number as a string.",
+    "entry_point": "fizzbuzz_7_11",
+    "tests": [
+      "assert fizzbuzz_7_11(77) == 'FizzBuzz'",
+      "assert fizzbuzz_7_11(154) == 'FizzBuzz'",
+      "assert fizzbuzz_7_11(14) == 'Fizz'",
+      "assert fizzbuzz_7_11(7) == 'Fizz'",
+      "assert fizzbuzz_7_11(22) == 'Buzz'",
+      "assert fizzbuzz_7_11(15) == '15'",
+      "assert fizzbuzz_7_11(3) == '3'"
+    ],
+    "reference": "def fizzbuzz_7_11(n):\n    if n % 77 == 0:\n        return 'FizzBuzz'\n    if n % 7 == 0:\n        return 'Fizz'\n    if n % 11 == 0:\n        return 'Buzz'\n    return str(n)"
+  },
+  {
+    "task_id": "spiral_order_ccw",
+    "variant_of": "spiral_order",
+    "twist": "counterclockwise spiral, going DOWN first (canonical is clockwise, going right first)",
+    "prompt": "Write a function `spiral_order_ccw(matrix)` that returns all elements of an m x n matrix (list of lists) in COUNTERCLOCKWISE spiral order: start at the top-left, go DOWN the left column first, then RIGHT along the bottom row, then UP the right column, then LEFT along the top row, spiraling inward. Return [] for an empty matrix.",
+    "entry_point": "spiral_order_ccw",
+    "tests": [
+      "assert spiral_order_ccw([[1,2,3],[4,5,6],[7,8,9]]) == [1,4,7,8,9,6,3,2,5]",
+      "assert spiral_order_ccw([[1,2,3,4],[5,6,7,8],[9,10,11,12]]) == [1,5,9,10,11,12,8,4,3,2,6,7]",
+      "assert spiral_order_ccw([]) == []",
+      "assert spiral_order_ccw([[1]]) == [1]",
+      "assert spiral_order_ccw([[1,2],[3,4]]) == [1,3,4,2]",
+      "assert spiral_order_ccw([[1,2,3]]) == [1,2,3]",
+      "assert spiral_order_ccw([[1],[2],[3]]) == [1,2,3]"
+    ],
+    "reference": "def spiral_order_ccw(matrix):\n    if not matrix or not matrix[0]:\n        return []\n    t = [list(row) for row in zip(*matrix)]\n    out = []\n    top, bottom = 0, len(t) - 1\n    left, right = 0, len(t[0]) - 1\n    while top <= bottom and left <= right:\n        for c in range(left, right + 1):\n            out.append(t[top][c])\n        top += 1\n        for r in range(top, bottom + 1):\n            out.append(t[r][right])\n        right -= 1\n        if top <= bottom:\n            for c in range(right, left - 1, -1):\n                out.append(t[bottom][c])\n            bottom -= 1\n        if left <= right:\n            for r in range(bottom, top - 1, -1):\n                out.append(t[r][left])\n            left += 1\n    return out"
+  },
+  {
+    "task_id": "longest_unique_substring_text",
+    "variant_of": "longest_unique_substring",
+    "twist": "return the substring itself (earliest on ties), not its length",
+    "prompt": "Write a function `longest_unique_substring_text(s)` that returns the longest substring of `s` containing no repeating characters. If several substrings tie for longest, return the one that appears earliest in `s`. Return '' for an empty string.",
+    "entry_point": "longest_unique_substring_text",
+    "tests": [
+      "assert longest_unique_substring_text('abcabcbb') == 'abc'",
+      "assert longest_unique_substring_text('bbbbb') == 'b'",
+      "assert longest_unique_substring_text('pwwkew') == 'wke'",
+      "assert longest_unique_substring_text('') == ''",
+      "assert longest_unique_substring_text('abba') == 'ab'",
+      "assert longest_unique_substring_text('dvdf') == 'vdf'",
+      "assert longest_unique_substring_text('tmmzuxt') == 'mzuxt'"
+    ],
+    "reference": "def longest_unique_substring_text(s):\n    seen = {}\n    start = best_start = best_len = 0\n    for i, c in enumerate(s):\n        if c in seen and seen[c] >= start:\n            start = seen[c] + 1\n        seen[c] = i\n        if i - start + 1 > best_len:\n            best_len = i - start + 1\n            best_start = start\n    return s[best_start:best_start + best_len]"
+  },
+  {
+    "task_id": "roman_additive",
+    "variant_of": "roman_to_int",
+    "twist": "additive-only numerals: no subtractive notation (IV is 6, not 4)",
+    "prompt": "Write a function `roman_additive(s)` that converts a string of the symbols I, V, X, L, C, D, M (worth 1, 5, 10, 50, 100, 500, 1000) to an integer in an ADDITIVE-ONLY system. There is no subtractive notation: every symbol simply adds its value, so 'IV' is 6 (not 4) and 'IX' is 11 (not 9). An empty string is 0.",
+    "entry_point": "roman_additive",
+    "tests": [
+      "assert roman_additive('III') == 3",
+      "assert roman_additive('IV') == 6",
+      "assert roman_additive('IX') == 11",
+      "assert roman_additive('LVIII') == 58",
+      "assert roman_additive('MCMXCIV') == 2216",
+      "assert roman_additive('XLII') == 62",
+      "assert roman_additive('MMXXVI') == 2026",
+      "assert roman_additive('') == 0"
+    ],
+    "reference": "def roman_additive(s):\n    vals = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    return sum(vals[c] for c in s)"
+  },
+  {
+    "task_id": "is_strict_parens",
+    "variant_of": "is_valid_parens",
+    "twist": "any non-bracket character makes the string invalid (canonical solutions silently skip other characters)",
+    "prompt": "Write a function `is_strict_parens(s)` that returns True only if `s` consists entirely of bracket characters from '()[]{}' and every opening bracket is closed by the matching bracket in the correct order. Any other character, including spaces and letters, makes the string invalid (return False). An empty string is valid.",
+    "entry_point": "is_strict_parens",
+    "tests": [
+      "assert is_strict_parens('()') is True",
+      "assert is_strict_parens('()[]{}') is True",
+      "assert is_strict_parens('(]') is False",
+      "assert is_strict_parens('([)]') is False",
+      "assert is_strict_parens('{[]}') is True",
+      "assert is_strict_parens('') is True",
+      "assert is_strict_parens('(') is False",
+      "assert is_strict_parens('(a)') is False",
+      "assert is_strict_parens('a') is False",
+      "assert is_strict_parens('( )') is False"
+    ],
+    "reference": "def is_strict_parens(s):\n    pairs = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for c in s:\n        if c in '([{':\n            stack.append(c)\n        elif c in pairs:\n            if not stack or stack.pop() != pairs[c]:\n                return False\n        else:\n            return False\n    return not stack"
+  }
+]

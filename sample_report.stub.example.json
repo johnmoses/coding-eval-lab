@@ -1,0 +1,253 @@
+{
+  "generated_at": "2026-11-10T08:00:35+00:00",
+  "meta": {
+    "provider": "stub",
+    "model": "reference-stub",
+    "num_tasks": 16,
+    "difficulty": "all",
+    "n_samples": 10,
+    "timeout_s": 5.0,
+    "stub_fail_rate": 0.4
+  },
+  "aggregate": {
+    "pass@1": 0.8313,
+    "pass@5": 1.0,
+    "pass@10": 1.0
+  },
+  "aggregate_ci95": {
+    "pass@1": [
+      0.7563,
+      0.9
+    ],
+    "pass@5": [
+      0.9948,
+      1.0
+    ],
+    "pass@10": [
+      1.0,
+      1.0
+    ]
+  },
+  "failure_breakdown": {
+    "fail": 26,
+    "error": 1
+  },
+  "tasks": [
+    {
+      "task_id": "sum_list",
+      "n": 10,
+      "c": 9,
+      "pass_rate": 0.9,
+      "pass@1": 0.9,
+      "status_counts": {
+        "pass": 9,
+        "fail": 1
+      },
+      "sample_failure": "assert sum_list([1, 2, 3]) == 6 | AssertionError",
+      "sample_failure_code": "def sum_list(nums):\n    pass  # sum(nums)"
+    },
+    {
+      "task_id": "is_palindrome",
+      "n": 10,
+      "c": 7,
+      "pass_rate": 0.7,
+      "pass@1": 0.7,
+      "status_counts": {
+        "pass": 7,
+        "fail": 3
+      },
+      "sample_failure": "assert is_palindrome('racecar') is True | AssertionError",
+      "sample_failure_code": "def is_palindrome(s):\n    t = ''.join(c.lower() for c in s if not c.isspace())\n    return t != t[::-1]"
+    },
+    {
+      "task_id": "fizzbuzz",
+      "n": 10,
+      "c": 8,
+      "pass_rate": 0.8,
+      "pass@1": 0.8,
+      "status_counts": {
+        "fail": 2,
+        "pass": 8
+      },
+      "sample_failure": "assert fizzbuzz(15) == 'FizzBuzz' | AssertionError",
+      "sample_failure_code": "def fizzbuzz(n):\n    if n % 15 == 0:\n        pass  # 'FizzBuzz'\n    if n % 3 == 0:\n        return 'Fizz'\n    if n % 5 == 0:\n        return 'Buzz'\n    return str(n)"
+    },
+    {
+      "task_id": "two_sum",
+      "n": 10,
+      "c": 9,
+      "pass_rate": 0.9,
+      "pass@1": 0.9,
+      "status_counts": {
+        "pass": 9,
+        "fail": 1
+      },
+      "sample_failure": "assert two_sum([2, 7, 11, 15], 9) == (0, 1) | AssertionError",
+      "sample_failure_code": "def two_sum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        if target - x in seen:\n            pass  # (seen[target - x], i)\n        seen[x] = i"
+    },
+    {
+      "task_id": "count_vowels",
+      "n": 10,
+      "c": 7,
+      "pass_rate": 0.7,
+      "pass@1": 0.7,
+      "status_counts": {
+        "fail": 3,
+        "pass": 7
+      },
+      "sample_failure": "assert count_vowels('hello') == 2 | AssertionError",
+      "sample_failure_code": "def count_vowels(s):\n    pass  # sum(1 for c in s.lower() if c in 'aeiou')"
+    },
+    {
+      "task_id": "flatten",
+      "n": 10,
+      "c": 8,
+      "pass_rate": 0.8,
+      "pass@1": 0.8,
+      "status_counts": {
+        "pass": 8,
+        "fail": 2
+      },
+      "sample_failure": "assert flatten([[1, 2], [3], [4, 5]]) == [1, 2, 3, 4, 5] | AssertionError",
+      "sample_failure_code": "def flatten(nested):\n    pass  # [x for sub in nested for x in sub]"
+    },
+    {
+      "task_id": "gcd",
+      "n": 10,
+      "c": 10,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 10
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "unique_sorted",
+      "n": 10,
+      "c": 8,
+      "pass_rate": 0.8,
+      "pass@1": 0.8,
+      "status_counts": {
+        "pass": 8,
+        "fail": 2
+      },
+      "sample_failure": "assert unique_sorted([3, 1, 2, 1, 3]) == [1, 2, 3] | AssertionError",
+      "sample_failure_code": "def unique_sorted(nums):\n    pass  # sorted(set(nums))"
+    },
+    {
+      "task_id": "title_case",
+      "n": 10,
+      "c": 7,
+      "pass_rate": 0.7,
+      "pass@1": 0.7,
+      "status_counts": {
+        "fail": 3,
+        "pass": 7
+      },
+      "sample_failure": "assert title_case('hello world') == 'Hello World' | AssertionError",
+      "sample_failure_code": "def title_case(s):\n    return ' '.join(w[:2].upper() + w[1:].lower() for w in s.split(' ')) if s else ''"
+    },
+    {
+      "task_id": "max_subarray",
+      "n": 10,
+      "c": 8,
+      "pass_rate": 0.8,
+      "pass@1": 0.8,
+      "status_counts": {
+        "fail": 2,
+        "pass": 8
+      },
+      "sample_failure": "assert max_subarray([-2, 1, -3, 4, -1, 2, 1, -5, 4]) == 6 | AssertionError",
+      "sample_failure_code": "def max_subarray(nums):\n    best = cur = nums[0]\n    for x in nums[1:]:\n        cur = max(x, cur + x)\n        best = max(best, cur)\n    pass  # best"
+    },
+    {
+      "task_id": "roman_to_int",
+      "n": 10,
+      "c": 9,
+      "pass_rate": 0.9,
+      "pass@1": 0.9,
+      "status_counts": {
+        "pass": 9,
+        "fail": 1
+      },
+      "sample_failure": "assert roman_to_int('III') == 3 | AssertionError",
+      "sample_failure_code": "def roman_to_int(s):\n    vals = {'I':1,'V':5,'X':10,'L':50,'C':100,'D':500,'M':1000}\n    total = 0\n    for i, c in enumerate(s):\n        if i + 1 < len(s) and vals[c] < vals[s[i+1]]:\n            total -= vals[c]\n        else:\n            total += vals[c]\n    pass  # total"
+    },
+    {
+      "task_id": "merge_intervals",
+      "n": 10,
+      "c": 7,
+      "pass_rate": 0.7,
+      "pass@1": 0.7,
+      "status_counts": {
+        "pass": 7,
+        "fail": 3
+      },
+      "sample_failure": "assert merge_intervals([[1,3],[2,6],[8,10],[15,18]]) == [[1,6],[8,10],[15,18]] | AssertionError",
+      "sample_failure_code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    s = sorted(intervals, key=lambda x: x[0])\n    out = [s[0][:]]\n    for start, end in s[2:]:\n        if start <= out[-1][1]:\n            out[-1][1] = max(out[-1][1], end)\n        else:\n            out.append([start, end])\n    return out"
+    },
+    {
+      "task_id": "is_valid_parens",
+      "n": 10,
+      "c": 10,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 10
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "atoi",
+      "n": 10,
+      "c": 8,
+      "pass_rate": 0.8,
+      "pass@1": 0.8,
+      "status_counts": {
+        "pass": 8,
+        "fail": 2
+      },
+      "sample_failure": "assert atoi('42') == 42 | AssertionError",
+      "sample_failure_code": "def atoi(s):\n    s = s.lstrip()\n    if not s:\n        return 0\n    i, sign = 0, 2\n    if s[0] in '+-':\n        sign = -1 if s[0] == '-' else 1\n        i = 1\n    num = 0\n    while i < len(s) and s[i].isdigit():\n        num = num * 10 + int(s[i])\n        i += 1\n    num *= sign\n    return max(-2147483648, min(2147483647, num))"
+    },
+    {
+      "task_id": "longest_unique_substring",
+      "n": 10,
+      "c": 9,
+      "pass_rate": 0.9,
+      "pass@1": 0.9,
+      "status_counts": {
+        "fail": 1,
+        "pass": 9
+      },
+      "sample_failure": "assert longest_unique_substring('dvdf') == 3 | AssertionError",
+      "sample_failure_code": "def longest_unique_substring(s):\n    seen = {}\n    start = best = 0\n    for i, c in enumerate(s):\n        if c in seen and seen[c] >= start:\n            start = seen[c] + 2\n        seen[c] = i\n        best = max(best, i - start + 1)\n    return best"
+    },
+    {
+      "task_id": "spiral_order",
+      "n": 10,
+      "c": 9,
+      "pass_rate": 0.9,
+      "pass@1": 0.9,
+      "status_counts": {
+        "pass": 9,
+        "error": 1
+      },
+      "sample_failure": "left, right = 0, len(matrix[0]) - 1 | IndexError: list index out of range",
+      "sample_failure_code": "def spiral_order(matrix):\n    if not matrix or not matrix[0]:\n        pass  # []\n    out = []\n    top, bottom = 0, len(matrix) - 1\n    left, right = 0, len(matrix[0]) - 1\n    while top <= bottom and left <= right:\n        for c in range(left, right + 1):\n            out.append(matrix[top][c])\n        top += 1\n        for r in range(top, bottom + 1):\n            out.append(matrix[r][right])\n        right -= 1\n        if top <= bottom:\n            for c in range(right, left - 1, -1):\n                out.append(matrix[bottom][c])\n            bottom -= 1\n        if left <= right:\n            for r in range(bottom, top - 1, -1):\n                out.append(matrix[r][left])\n            left += 1\n    return out"
+    }
+  ],
+  "difficulty_breakdown": {
+    "easy": {
+      "tasks": 10,
+      "mean_pass@1": 0.81
+    },
+    "hard": {
+      "tasks": 6,
+      "mean_pass@1": 0.8667
+    }
+  }
+}

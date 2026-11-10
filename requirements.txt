@@ -1,9 +1,15 @@
-# Core harness has ZERO runtime dependencies — stdlib only (subprocess, math, json).
-# That is deliberate: the sandbox and the pass@k estimator should not need a
-# third-party stack to be trustworthy.
+# Core harness: ZERO runtime dependencies — stdlib only (subprocess, math, json).
+# The full stub pipeline AND the tests run on plain Python 3.10+ with nothing installed:
+#   python3 run_eval.py --n 10 --k 1 5 10
+#   python3 tests/test_passk.py
+#
+# The packages below are OPTIONAL. Uncomment and `pip install -r requirements.txt`
+# only if you want the extras:
 
-# Optional: only needed for the real (non-stub) provider.
-# openai>=1.0
+# --- real OpenAI provider (--provider openai) ---
+openai>=1.0,<2.0
+python-dotenv>=1.0,<2.0   # read the API key from a gitignored .env
+#                           # (a tiny built-in fallback parser is used if absent)
 
-# Optional: test runner.
-# pytest>=7.0
+# --- run the tests under pytest (optional; stdlib runner needs nothing) ---
+pytest>=7.0,<9.0

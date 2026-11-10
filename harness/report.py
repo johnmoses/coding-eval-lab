@@ -13,7 +13,7 @@ import json
 from datetime import datetime, timezone
 
 from .grade import TaskResult
-from .passk import aggregate_pass_at_k, pass_at_k
+from .passk import aggregate_pass_at_k, bootstrap_pass_at_k_ci, pass_at_k
 
 
 def build_report(results: list[TaskResult], ks: list[int], meta: dict) -> dict:
@@ -24,6 +24,14 @@ def build_report(results: list[TaskResult], ks: list[int], meta: dict) -> dict:
         for k in ks
         if all(r.n >= k for r in results)
     }
+
+    # 95% bootstrap intervals (tasks AND samples resampled). A point estimate alone
+    # overstates precision, especially with few tasks.
+    aggregate_ci = {}
+    for k in ks:
+        if all(r.n >= k for r in results):
+            lo, hi = bootstrap_pass_at_k_ci(per_task, k)
+            aggregate_ci[f"pass@{k}"] = [round(lo, 4), round(hi, 4)]
 
     tasks = []
     for r in results:
@@ -36,6 +44,7 @@ def build_report(results: list[TaskResult], ks: list[int], meta: dict) -> dict:
                 "pass@1": round(pass_at_k(r.n, r.c, 1), 4),
                 "status_counts": dict(r.status_counts),
                 "sample_failure": r.first_failure_stderr,
+                "sample_failure_code": r.first_failure_code,
             }
         )
 
@@ -49,6 +58,7 @@ def build_report(results: list[TaskResult], ks: list[int], meta: dict) -> dict:
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "meta": meta,
         "aggregate": aggregate,
+        "aggregate_ci95": aggregate_ci,
         "failure_breakdown": failure_totals,
         "tasks": tasks,
     }
@@ -61,9 +71,12 @@ def print_summary(report: dict) -> None:
           f"tasks={m.get('num_tasks')}  n={m.get('n_samples')}  "
           f"fail_rate={m.get('stub_fail_rate', '-')}")
 
-    print("\naggregate:")
+    print("\naggregate (95% bootstrap CI over tasks and samples):")
+    ci = report.get("aggregate_ci95", {})
     for k, v in report["aggregate"].items():
-        print(f"  {k:<8} {v}")
+        interval = ci.get(k)
+        suffix = f"   [{interval[0]:.3f}, {interval[1]:.3f}]" if interval else ""
+        print(f"  {k:<8} {v}{suffix}")
 
     if report["failure_breakdown"]:
         print("\nfailure breakdown:")

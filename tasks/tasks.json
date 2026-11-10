@@ -1,0 +1,221 @@
+[
+  {
+    "task_id": "sum_list",
+    "difficulty": "easy",
+    "prompt": "Write a function `sum_list(nums)` that returns the sum of a list of integers. Return 0 for an empty list.",
+    "entry_point": "sum_list",
+    "tests": [
+      "assert sum_list([1, 2, 3]) == 6",
+      "assert sum_list([]) == 0",
+      "assert sum_list([-1, 1]) == 0",
+      "assert sum_list([10]) == 10"
+    ],
+    "reference": "def sum_list(nums):\n    return sum(nums)"
+  },
+  {
+    "task_id": "is_palindrome",
+    "difficulty": "easy",
+    "prompt": "Write a function `is_palindrome(s)` that returns True if the string `s` reads the same forwards and backwards, ignoring case and spaces, else False.",
+    "entry_point": "is_palindrome",
+    "tests": [
+      "assert is_palindrome('racecar') is True",
+      "assert is_palindrome('A man a plan a canal Panama') is True",
+      "assert is_palindrome('hello') is False",
+      "assert is_palindrome('') is True"
+    ],
+    "reference": "def is_palindrome(s):\n    t = ''.join(c.lower() for c in s if not c.isspace())\n    return t == t[::-1]"
+  },
+  {
+    "task_id": "fizzbuzz",
+    "difficulty": "easy",
+    "prompt": "Write a function `fizzbuzz(n)` that returns 'FizzBuzz' if n is divisible by both 3 and 5, 'Fizz' if divisible by 3, 'Buzz' if divisible by 5, otherwise the number as a string.",
+    "entry_point": "fizzbuzz",
+    "tests": [
+      "assert fizzbuzz(15) == 'FizzBuzz'",
+      "assert fizzbuzz(9) == 'Fizz'",
+      "assert fizzbuzz(10) == 'Buzz'",
+      "assert fizzbuzz(7) == '7'"
+    ],
+    "reference": "def fizzbuzz(n):\n    if n % 15 == 0:\n        return 'FizzBuzz'\n    if n % 3 == 0:\n        return 'Fizz'\n    if n % 5 == 0:\n        return 'Buzz'\n    return str(n)"
+  },
+  {
+    "task_id": "two_sum",
+    "difficulty": "easy",
+    "prompt": "Write a function `two_sum(nums, target)` that returns a tuple of two indices (i, j) with i < j such that nums[i] + nums[j] == target. Assume exactly one solution exists.",
+    "entry_point": "two_sum",
+    "tests": [
+      "assert two_sum([2, 7, 11, 15], 9) == (0, 1)",
+      "assert two_sum([3, 2, 4], 6) == (1, 2)",
+      "assert two_sum([3, 3], 6) == (0, 1)"
+    ],
+    "reference": "def two_sum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        if target - x in seen:\n            return (seen[target - x], i)\n        seen[x] = i"
+  },
+  {
+    "task_id": "count_vowels",
+    "difficulty": "easy",
+    "prompt": "Write a function `count_vowels(s)` that returns the number of vowels (a, e, i, o, u, case-insensitive) in the string `s`.",
+    "entry_point": "count_vowels",
+    "tests": [
+      "assert count_vowels('hello') == 2",
+      "assert count_vowels('AEIOU') == 5",
+      "assert count_vowels('xyz') == 0",
+      "assert count_vowels('') == 0"
+    ],
+    "reference": "def count_vowels(s):\n    return sum(1 for c in s.lower() if c in 'aeiou')"
+  },
+  {
+    "task_id": "flatten",
+    "difficulty": "easy",
+    "prompt": "Write a function `flatten(nested)` that flattens a list of lists into a single list, preserving order. Only one level of nesting.",
+    "entry_point": "flatten",
+    "tests": [
+      "assert flatten([[1, 2], [3], [4, 5]]) == [1, 2, 3, 4, 5]",
+      "assert flatten([[], [1]]) == [1]",
+      "assert flatten([]) == []"
+    ],
+    "reference": "def flatten(nested):\n    return [x for sub in nested for x in sub]"
+  },
+  {
+    "task_id": "gcd",
+    "difficulty": "easy",
+    "prompt": "Write a function `gcd(a, b)` that returns the greatest common divisor of two positive integers using the Euclidean algorithm.",
+    "entry_point": "gcd",
+    "tests": [
+      "assert gcd(12, 8) == 4",
+      "assert gcd(17, 5) == 1",
+      "assert gcd(100, 10) == 10"
+    ],
+    "reference": "def gcd(a, b):\n    while b:\n        a, b = b, a % b\n    return a"
+  },
+  {
+    "task_id": "unique_sorted",
+    "difficulty": "easy",
+    "prompt": "Write a function `unique_sorted(nums)` that returns a sorted list of the unique values in `nums`.",
+    "entry_point": "unique_sorted",
+    "tests": [
+      "assert unique_sorted([3, 1, 2, 1, 3]) == [1, 2, 3]",
+      "assert unique_sorted([]) == []",
+      "assert unique_sorted([5, 5, 5]) == [5]"
+    ],
+    "reference": "def unique_sorted(nums):\n    return sorted(set(nums))"
+  },
+  {
+    "task_id": "title_case",
+    "difficulty": "easy",
+    "prompt": "Write a function `title_case(s)` that capitalizes the first letter of each word in `s` and lowercases the rest. Words are separated by single spaces.",
+    "entry_point": "title_case",
+    "tests": [
+      "assert title_case('hello world') == 'Hello World'",
+      "assert title_case('ALL CAPS') == 'All Caps'",
+      "assert title_case('') == ''"
+    ],
+    "reference": "def title_case(s):\n    return ' '.join(w[:1].upper() + w[1:].lower() for w in s.split(' ')) if s else ''"
+  },
+  {
+    "task_id": "max_subarray",
+    "difficulty": "easy",
+    "prompt": "Write a function `max_subarray(nums)` that returns the maximum sum of any contiguous non-empty subarray (Kadane's algorithm).",
+    "entry_point": "max_subarray",
+    "tests": [
+      "assert max_subarray([-2, 1, -3, 4, -1, 2, 1, -5, 4]) == 6",
+      "assert max_subarray([1]) == 1",
+      "assert max_subarray([-1, -2, -3]) == -1"
+    ],
+    "reference": "def max_subarray(nums):\n    best = cur = nums[0]\n    for x in nums[1:]:\n        cur = max(x, cur + x)\n        best = max(best, cur)\n    return best"
+  },
+  {
+    "task_id": "roman_to_int",
+    "difficulty": "hard",
+    "prompt": "Write a function `roman_to_int(s)` that converts a Roman numeral string to an integer. Handle subtractive notation (IV=4, IX=9, XL=40, XC=90, CD=400, CM=900).",
+    "entry_point": "roman_to_int",
+    "tests": [
+      "assert roman_to_int('III') == 3",
+      "assert roman_to_int('IV') == 4",
+      "assert roman_to_int('IX') == 9",
+      "assert roman_to_int('LVIII') == 58",
+      "assert roman_to_int('MCMXCIV') == 1994",
+      "assert roman_to_int('XLII') == 42"
+    ],
+    "reference": "def roman_to_int(s):\n    vals = {'I':1,'V':5,'X':10,'L':50,'C':100,'D':500,'M':1000}\n    total = 0\n    for i, c in enumerate(s):\n        if i + 1 < len(s) and vals[c] < vals[s[i+1]]:\n            total -= vals[c]\n        else:\n            total += vals[c]\n    return total"
+  },
+  {
+    "task_id": "merge_intervals",
+    "difficulty": "hard",
+    "prompt": "Write a function `merge_intervals(intervals)` that merges all overlapping intervals and returns a sorted list of non-overlapping intervals. Each interval is a [start, end] list. Intervals that only touch at an endpoint (e.g. [1,4] and [4,5]) count as overlapping and should merge.",
+    "entry_point": "merge_intervals",
+    "tests": [
+      "assert merge_intervals([[1,3],[2,6],[8,10],[15,18]]) == [[1,6],[8,10],[15,18]]",
+      "assert merge_intervals([[1,4],[4,5]]) == [[1,5]]",
+      "assert merge_intervals([]) == []",
+      "assert merge_intervals([[1,4],[2,3]]) == [[1,4]]",
+      "assert merge_intervals([[1,4],[0,4]]) == [[0,4]]",
+      "assert merge_intervals([[1,4],[0,0]]) == [[0,0],[1,4]]"
+    ],
+    "reference": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    s = sorted(intervals, key=lambda x: x[0])\n    out = [s[0][:]]\n    for start, end in s[1:]:\n        if start <= out[-1][1]:\n            out[-1][1] = max(out[-1][1], end)\n        else:\n            out.append([start, end])\n    return out"
+  },
+  {
+    "task_id": "is_valid_parens",
+    "difficulty": "hard",
+    "prompt": "Write a function `is_valid_parens(s)` that returns True if every opening bracket in '()[]{}' is closed by the correct matching bracket in the correct order, else False. An empty string is valid.",
+    "entry_point": "is_valid_parens",
+    "tests": [
+      "assert is_valid_parens('()') is True",
+      "assert is_valid_parens('()[]{}') is True",
+      "assert is_valid_parens('(]') is False",
+      "assert is_valid_parens('([)]') is False",
+      "assert is_valid_parens('{[]}') is True",
+      "assert is_valid_parens('') is True",
+      "assert is_valid_parens('(') is False",
+      "assert is_valid_parens(']') is False"
+    ],
+    "reference": "def is_valid_parens(s):\n    pairs = {')':'(', ']':'[', '}':'{'}\n    stack = []\n    for c in s:\n        if c in '([{':\n            stack.append(c)\n        elif c in pairs:\n            if not stack or stack.pop() != pairs[c]:\n                return False\n    return not stack"
+  },
+  {
+    "task_id": "atoi",
+    "difficulty": "hard",
+    "prompt": "Write a function `atoi(s)` that converts a string to a 32-bit signed integer like C's atoi. Skip leading whitespace, handle an optional leading '+' or '-', read digits until a non-digit, and clamp to the 32-bit signed range [-2147483648, 2147483647]. Return 0 if no valid conversion.",
+    "entry_point": "atoi",
+    "tests": [
+      "assert atoi('42') == 42",
+      "assert atoi('   -42') == -42",
+      "assert atoi('4193 with words') == 4193",
+      "assert atoi('words and 987') == 0",
+      "assert atoi('-91283472332') == -2147483648",
+      "assert atoi('2147483648') == 2147483647",
+      "assert atoi('+1') == 1",
+      "assert atoi('') == 0"
+    ],
+    "reference": "def atoi(s):\n    s = s.lstrip()\n    if not s:\n        return 0\n    i, sign = 0, 1\n    if s[0] in '+-':\n        sign = -1 if s[0] == '-' else 1\n        i = 1\n    num = 0\n    while i < len(s) and s[i].isdigit():\n        num = num * 10 + int(s[i])\n        i += 1\n    num *= sign\n    return max(-2147483648, min(2147483647, num))"
+  },
+  {
+    "task_id": "longest_unique_substring",
+    "difficulty": "hard",
+    "prompt": "Write a function `longest_unique_substring(s)` that returns the length of the longest substring of `s` with no repeating characters.",
+    "entry_point": "longest_unique_substring",
+    "tests": [
+      "assert longest_unique_substring('abcabcbb') == 3",
+      "assert longest_unique_substring('bbbbb') == 1",
+      "assert longest_unique_substring('pwwkew') == 3",
+      "assert longest_unique_substring('') == 0",
+      "assert longest_unique_substring('abba') == 2",
+      "assert longest_unique_substring('dvdf') == 3",
+      "assert longest_unique_substring('tmmzuxt') == 5"
+    ],
+    "reference": "def longest_unique_substring(s):\n    seen = {}\n    start = best = 0\n    for i, c in enumerate(s):\n        if c in seen and seen[c] >= start:\n            start = seen[c] + 1\n        seen[c] = i\n        best = max(best, i - start + 1)\n    return best"
+  },
+  {
+    "task_id": "spiral_order",
+    "difficulty": "hard",
+    "prompt": "Write a function `spiral_order(matrix)` that returns all elements of an m x n matrix (list of lists) in spiral order, starting top-left, going right, then down, then left, then up, spiraling inward. Return [] for an empty matrix.",
+    "entry_point": "spiral_order",
+    "tests": [
+      "assert spiral_order([[1,2,3],[4,5,6],[7,8,9]]) == [1,2,3,6,9,8,7,4,5]",
+      "assert spiral_order([[1,2,3,4],[5,6,7,8],[9,10,11,12]]) == [1,2,3,4,8,12,11,10,9,5,6,7]",
+      "assert spiral_order([]) == []",
+      "assert spiral_order([[1]]) == [1]",
+      "assert spiral_order([[1,2],[3,4]]) == [1,2,4,3]",
+      "assert spiral_order([[1],[2],[3]]) == [1,2,3]"
+    ],
+    "reference": "def spiral_order(matrix):\n    if not matrix or not matrix[0]:\n        return []\n    out = []\n    top, bottom = 0, len(matrix) - 1\n    left, right = 0, len(matrix[0]) - 1\n    while top <= bottom and left <= right:\n        for c in range(left, right + 1):\n            out.append(matrix[top][c])\n        top += 1\n        for r in range(top, bottom + 1):\n            out.append(matrix[r][right])\n        right -= 1\n        if top <= bottom:\n            for c in range(right, left - 1, -1):\n                out.append(matrix[bottom][c])\n            bottom -= 1\n        if left <= right:\n            for r in range(bottom, top - 1, -1):\n                out.append(matrix[r][left])\n            left += 1\n    return out"
+  }
+]

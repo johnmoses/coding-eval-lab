@@ -3,6 +3,10 @@ __pycache__/
 .venv/
 .env
 .pytest_cache/
-sample_report.json
+# generated reports — ignore all, except committed examples (*.example.json)
+sample_report*.json
+!sample_report.*.example.json
+probe_report*.json
+!probe_report.*.example.json
 eval-*.json
 .DS_Store

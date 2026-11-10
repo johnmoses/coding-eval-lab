@@ -1,7 +1,30 @@
-"""Tests for the unbiased pass@k estimator and the sandbox status classification."""
+"""Tests for the unbiased pass@k estimator and the sandbox status classification.
+
+Runs with ZERO third-party dependencies — no pytest required:
+
+    python3 tests/test_passk.py        # stdlib runner (built in below)
+
+It is also pytest-compatible if you have it:
+
+    python3 -m pytest tests/ -q
+"""
+import json
+import os
+import re
+import sys
 from math import comb
 
-from harness.passk import aggregate_pass_at_k, pass_at_k
+# Make the repo root importable whether run from root or from tests/ (so the
+# stdlib runner works without pytest's rootdir/conftest machinery).
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _ROOT)
+
+from harness.passk import (
+    aggregate_pass_at_k,
+    bootstrap_mean_ci,
+    bootstrap_pass_at_k_ci,
+    pass_at_k,
+)
 from harness.sandbox import run_candidate
 
 
@@ -101,3 +124,99 @@ def test_best_of_n_picks_the_passing_candidate():
     assert best_r == 1.0
     assert best.strip() == _GOOD.strip()
     assert all_r.count(1.0) == 1
+
+
+# ------------------------------------------------------------------ confidence intervals
+def test_ci_degenerate_when_everything_passes():
+    assert bootstrap_pass_at_k_ci([(10, 10)] * 5, 1) == (1.0, 1.0)
+
+
+def test_ci_brackets_the_point_estimate():
+    per_task = [(10, 8), (10, 5), (10, 9), (10, 6), (10, 7)]
+    lo, hi = bootstrap_pass_at_k_ci(per_task, 1)
+    point = aggregate_pass_at_k(per_task, 1)
+    assert lo <= point <= hi
+    assert hi - lo > 0  # genuine uncertainty with mixed results
+
+
+def test_ci_is_reproducible_with_seed():
+    per_task = [(10, 8), (10, 5), (10, 9)]
+    assert bootstrap_pass_at_k_ci(per_task, 1, seed=3) == bootstrap_pass_at_k_ci(per_task, 1, seed=3)
+
+
+def test_ci_narrows_with_more_tasks():
+    few = bootstrap_pass_at_k_ci([(10, 5)] * 3 + [(10, 9)] * 3, 1)
+    many = bootstrap_pass_at_k_ci([(10, 5)] * 30 + [(10, 9)] * 30, 1)
+    assert (many[1] - many[0]) < (few[1] - few[0])
+
+
+def test_mean_ci_basic():
+    assert bootstrap_mean_ci([0.0, 0.0, 0.0]) == (0.0, 0.0)
+    lo, hi = bootstrap_mean_ci([0.0, 0.5, 1.0, 0.5])
+    assert lo <= 0.5 <= hi
+
+
+# ------------------------------------------------------------------ benchmark validation
+def _load(name):
+    with open(os.path.join(_ROOT, "tasks", name)) as f:
+        return json.load(f)
+
+
+def test_every_reference_solution_passes_its_own_tests():
+    """A benchmark whose own reference fails its tests is broken before any model runs."""
+    for t in _load("tasks.json") + _load("counterfactual.json"):
+        res = run_candidate(t["reference"], t["tests"])
+        assert res.status == "pass", f"{t['task_id']}: reference {res.status}: {res.stderr[-120:]}"
+
+
+def test_counterfactual_variants_point_at_real_originals():
+    originals = {t["task_id"] for t in _load("tasks.json")}
+    for v in _load("counterfactual.json"):
+        assert v["variant_of"] in originals, f"{v['task_id']} -> unknown {v['variant_of']}"
+
+
+def test_canonical_solution_fails_every_counterfactual_variant():
+    """The point of a counterfactual: the memorized canonical answer must be WRONG here.
+    If it passed, the twist wouldn't change the answer and the probe would measure nothing."""
+    originals = {t["task_id"]: t for t in _load("tasks.json")}
+    for v in _load("counterfactual.json"):
+        o = originals[v["variant_of"]]
+        renamed = re.sub(
+            r"\bdef " + re.escape(o["entry_point"]) + r"\(",
+            "def " + v["entry_point"] + "(",
+            o["reference"],
+        )
+        res = run_candidate(renamed, v["tests"])
+        assert res.status != "pass", f"{v['task_id']}: canonical solution still passes the twist"
+
+
+# --------------------------------------------------------------------------- runner
+def _run_all() -> int:
+    """Minimal stdlib test runner: discover and run every module-level test_* function.
+
+    Exists so the suite runs with no third-party deps (pytest optional). Returns a
+    process exit code: 0 if all pass, 1 otherwise.
+    """
+    import traceback
+
+    tests = sorted(
+        (name, obj)
+        for name, obj in globals().items()
+        if name.startswith("test_") and callable(obj)
+    )
+    passed = failed = 0
+    for name, fn in tests:
+        try:
+            fn()
+            passed += 1
+            print(f"  PASS {name}")
+        except Exception:
+            failed += 1
+            print(f"  FAIL {name}")
+            traceback.print_exc()
+    print(f"\n{passed} passed, {failed} failed")
+    return 0 if failed == 0 else 1
+
+
+if __name__ == "__main__":
+    sys.exit(_run_all())

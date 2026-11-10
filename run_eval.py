@@ -25,6 +25,10 @@ Examples:
 
     # contamination probe: matched original vs counterfactual-variant pairs (use a real model)
     python run_eval.py --probe contamination --provider openai --model gpt-4o-mini --n 5 --show-samples
+
+    # zero-cost: a local model via Ollama's OpenAI-compatible endpoint (no API key needed)
+    python run_eval.py --provider openai-compatible --base-url http://localhost:11434/v1 \\
+        --model qwen2.5-coder:7b --n 5 --show-samples
 """
 from __future__ import annotations
 
@@ -50,8 +54,24 @@ def load_tasks(path: Path) -> list[dict]:
 def main() -> None:
     ap = argparse.ArgumentParser(description="Execution-based coding-agent eval with pass@k")
     ap.add_argument("--tasks", default="tasks/tasks.json")
-    ap.add_argument("--provider", default="stub", choices=["stub", "openai"])
-    ap.add_argument("--model", default=None, help="model name for the openai provider")
+    ap.add_argument(
+        "--provider",
+        default="stub",
+        choices=["stub", "openai", "openai-compatible"],
+        help="stub = offline; openai = OpenAI; openai-compatible = any OpenAI-style endpoint "
+             "(local Ollama / llama.cpp, or a hosted free tier) via --base-url",
+    )
+    ap.add_argument("--model", default=None, help="model name (required for openai-compatible)")
+    ap.add_argument(
+        "--base-url",
+        default=None,
+        help="OpenAI-compatible endpoint, e.g. http://localhost:11434/v1 for Ollama",
+    )
+    ap.add_argument(
+        "--api-key-env",
+        default="OPENAI_API_KEY",
+        help="env var holding the API key (e.g. GROQ_API_KEY); optional for local servers",
+    )
     ap.add_argument("--n", type=int, default=10, help="samples generated per task")
     ap.add_argument("--k", type=int, nargs="+", default=[1, 5, 10], help="k values for pass@k")
     ap.add_argument("--timeout", type=float, default=5.0, help="per-candidate wall-clock limit (s)")
@@ -104,11 +124,20 @@ def main() -> None:
     variants = load_tasks(Path(args.counterfactuals)) if args.probe == "contamination" else []
     references = {t["task_id"]: t["reference"] for t in all_tasks + variants}
 
+    if args.provider == "openai-compatible" and not (args.model and args.base_url):
+        ap.error("--provider openai-compatible requires both --model and --base-url")
+
     if args.provider == "stub":
         provider = build_provider("stub", references, fail_rate=args.stub_fail_rate)
-    else:  # openai
-        kw = {"model": args.model} if args.model else {}
-        provider = build_provider("openai", references, **kw)
+    else:  # openai / openai-compatible
+        kw = {}
+        if args.model:
+            kw["model"] = args.model
+        if args.base_url:
+            kw["base_url"] = args.base_url
+        if args.api_key_env:
+            kw["api_key_env"] = args.api_key_env
+        provider = build_provider(args.provider, references, **kw)
 
     if args.probe == "contamination":
         run_contamination_probe(provider, all_tasks, variants, args)
@@ -137,6 +166,7 @@ def main() -> None:
     meta = {
         "provider": args.provider,
         "model": args.model or ("reference-stub" if args.provider == "stub" else "default"),
+        "base_url": args.base_url,
         "num_tasks": len(tasks),
         "difficulty": args.difficulty,
         "n_samples": args.n,
@@ -165,7 +195,8 @@ def run_contamination_probe(provider, originals: list[dict], variants: list[dict
 
     model = args.model or ("reference-stub" if args.provider == "stub" else "default")
     report = {
-        "meta": {"provider": args.provider, "model": model, "n_samples": args.n, "n_pairs": len(pairs)},
+        "meta": {"provider": args.provider, "model": model, "base_url": args.base_url,
+                 "n_samples": args.n, "n_pairs": len(pairs)},
         "summary": summary,
         "pairs": rows,
     }

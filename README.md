@@ -26,29 +26,89 @@ model from a weak one. Even the hard tier (subtractive Roman numerals, interval 
 with touch-at-endpoint edges, `atoi` with 32-bit clamping, spiral-matrix traversal) is
 saturated — because these are canonical problems a frontier model has seen in training.
 This is precisely the known weakness of function-level benchmarks like HumanEval, and it
-is the empirical case for the roadmap: contamination-resistant, repo-level tasks.
+is the empirical case for the roadmap: contamination-resistant, repo-level tasks. A small
+local model, by contrast, does fail the hard tier (0.70), so the set separates a weak model
+from a strong one even though it cannot separate frontier models from each other.
 
 > **The point of the lab is the measurement discipline, not a high number.** A benchmark
 > that everything passes measures nothing. The useful signal is the *spread* — between
 > difficulty tiers and between models — and the *failure breakdown*, not the headline rate.
 
-### Measured result
+### Measured results
 
-| Model | easy pass@1 | hard pass@1 | overall pass@1 |
-|---|---|---|---|
-| gpt-4o-mini | 1.00 | 1.00 | 1.00 |
+Same 16 tasks, same harness, two very different models:
+
+| Model | n | easy pass@1 | hard pass@1 | overall pass@1 (95% CI) | pass@5 | report |
+|---|---|---|---|---|---|---|
+| gpt-4o-mini (hosted) | 10 | 1.00 | 1.00 | 1.00 | 1.00 | _not archived_ ¹ |
+| qwen2.5-coder:1.5b (local, Ollama) | 5 | 0.98 | 0.70 | 0.875 (0.71–0.99) | 0.94 | [`sample_report.qwen2.5-coder-1.5b.example.json`](./sample_report.qwen2.5-coder-1.5b.example.json) |
+
+¹ The gpt-4o-mini run's console output was checked and its solutions eyeballed (see
+`--show-samples`), but the full-run report file was later overwritten by a smaller
+hard-tier run, so there is no archived report for that row. Re-run to archive it.
+
+**The finding: the benchmark saturates a frontier model and resolves a small one.** The
+frontier model clears everything, so on this task class it cannot discriminate frontier
+models. A 1.5B local model lands in the useful middle, with an easy/hard gap (0.98 vs 0.70)
+that the saturated run could never show. This is a real spread from a real second model,
+not a stub artifact.
+
+**What the 1.5B actually got wrong** (first failing sample per task, n=5, so illustrative and
+not a statistical taxonomy):
+
+| Task | Pass | Failure mode |
+|---|---|---|
+| `two_sum` | 4/5 | **Missing import**: used `Tuple` after importing only `List`, so the code never ran (`error`, not `fail`) |
+| `roman_to_int` | 3/5 | **Plausible-but-wrong one-liner**: a conditional whose subtract branch can never execute, so it is effectively additive |
+| `atoi` | 0/5 | **Spec misread**: returns `0` on overflow instead of clamping to the 32-bit range |
+| `spiral_order` | 3/5 | **Boundary/ordering bug** in the direction changes |
 
 A run writes `sample_report.<model>.json`; to keep one as a committed artifact, copy it to
-`sample_report.<model>.example.json` (the tracked naming — plain report files are gitignored).
+`sample_report.<model>.example.json` (the tracked naming; plain report files are gitignored).
 
-> **Why no multi-model spread here.** The natural next experiment — run a weaker model to
-> see the tasks resolve a capability gap — has run out of road: the older cheap models
-> (e.g. gpt-3.5-turbo) have been retired from the API, and their documented replacements
-> are *more* capable, not less. On canonical, function-level problems every currently
-> available model clears the bar. That is itself the finding: this class of task is
-> saturated and cannot discriminate frontier models. Real discrimination requires
-> **contamination-resistant and repo-level tasks** (the roadmap), where difficulty comes
-> from novelty and integration rather than from a harder algorithm the model has already seen.
+> **Why a local model, not another hosted one.** The obvious "run a weaker model" step hit a
+> wall on the hosted side: OpenAI's older cheap models (e.g. gpt-3.5-turbo) were retired,
+> and their documented replacements are *more* capable. A small local open-weight model is
+> the zero-cost way to get a weaker data point. See the next section.
+
+### Running without API credits — local and free-tier models
+
+`--provider openai-compatible` talks to any OpenAI-style endpoint, so the same harness runs
+against a local model for **$0**:
+
+```bash
+# one-time: pull a coding model (the 1.5B is ~1 GB and ran the full eval in under 2 minutes;
+# the 7B is roughly 4-5 GB and optional, see the probe section for why you might want it)
+ollama pull qwen2.5-coder:1.5b
+
+# run the eval (Ollama must be running; no API key needed for a local server)
+python3 run_eval.py --provider openai-compatible --base-url http://localhost:11434/v1 \
+    --model qwen2.5-coder:1.5b --n 5 --show-samples
+
+# the contamination probe works the same way
+python3 run_eval.py --probe contamination --provider openai-compatible \
+    --base-url http://localhost:11434/v1 --model qwen2.5-coder:1.5b --n 5 --show-samples
+```
+
+**Why this matters beyond cost:** a small model should actually *fail* some of these tasks.
+That gives the lab what the saturated frontier run couldn't: a real tier spread, and real
+failures for the failure breakdown to categorize instead of the stub's synthetic ones.
+
+**Things to know:**
+- **Ollama's `/v1` endpoint ignores the `n` parameter** (an open upstream issue), returning one
+  choice per call. The provider therefore loops until it has exactly `n` samples. Without that,
+  pass@k would silently be computed from one sample. This is covered by a test.
+- **Local generation is slower than a hosted API**, and `n=5` means five sequential
+  generations per task. Start with `--n 3 --difficulty hard` to gauge speed.
+- **Read the failure breakdown, not just pass@1.** Small models often wrap code in prose or
+  break the format; that shows up as `error` (didn't run) rather than `fail` (ran, wrong
+  answer). Those are different weaknesses: instruction-following versus coding.
+- **Hosted free tiers** (Groq, OpenRouter `:free` models, Gemini, etc.) work through the same
+  flags: `--base-url <their /v1 endpoint> --api-key-env <THEIR_KEY_VAR>`. They are rate-limited,
+  the provider backs off on HTTP 429, and the free-model catalogs and limits change often, so
+  check the provider's current docs. An exhausted-quota error is *not* retried.
+- **Contamination caveat still applies:** a small model failing a canonical task partly
+  reflects how much of the canon it memorized, not pure capability.
 
 **The estimator, shown on the stub provider** (deterministic, offline, 40% injected
 corruption, 16 tasks × n=10, so pass@1 is sub-1.0 and the pass@k curve is visible):
@@ -105,6 +165,39 @@ python3 run_eval.py --probe contamination --provider openai --model gpt-4o-mini 
 **The twists are machine-validated** in the test suite: each variant's own reference must
 pass its tests, *and* the original's canonical solution must **fail** them. Without the
 second check, a "counterfactual" might not change the answer and would measure nothing.
+
+#### Measured: qwen2.5-coder:1.5b (n=5, 7 pairs)
+
+Report: [`probe_report.qwen2.5-coder-1.5b.example.json`](./probe_report.qwen2.5-coder-1.5b.example.json)
+
+| Original → variant | original | variant | drop | note |
+|---|---|---|---|---|
+| `merge_intervals` → `_strict` | 0.80 | 0.00 | +0.80 | failing code is the canonical `<=` merge, ignoring the instruction |
+| `spiral_order` → `_ccw` | 0.60 | 0.00 | +0.60 | failing code is the canonical clockwise traversal |
+| `roman_to_int` → `roman_additive` | 0.80 | 0.00 | +0.80 | applies subtractive logic despite "additive-only" |
+| `longest_unique_substring` → `_text` | 1.00 | 0.60 | +0.40 | **confounded**: the variant is also objectively harder (needs best-start tracking) |
+| `is_valid_parens` → `is_strict_parens` | 0.60 | 0.40 | +0.20 | failing code silently skips non-bracket characters (canonical behavior) |
+| `atoi` → `atoi16` | 0.20 | 0.00 | +0.20 | **floor-limited**: the original is already mostly failed; this failure was an unrelated bug (`UnboundLocalError`) |
+| `fizzbuzz` → `fizzbuzz_7_11` | 1.00 | 1.00 | 0.00 | followed the explicit twist |
+
+**Mean pass@1 fell from 0.71 to 0.29: mean drop +0.43, 95% CI [+0.23, +0.63], 6 of 7 pairs dropped.**
+The headline is the all-pairs mean, fixed before looking at per-pair results; dropping the
+floor-limited `atoi` pair after the fact would raise it and is deliberately not done.
+
+**What it supports:** in the four clearest pairs the failing code reproduces the canonical
+behavior while an explicit instruction in the prompt says otherwise. The model leans on the
+well-known form over the stated spec. (This is from reading the first failing sample per pair,
+not every failure.)
+
+**What it does not show:**
+- It does **not** separate memorization from weak instruction-following. A 1.5B model would
+  produce the same signature either way, so read it as *reliance on the canonical form*, not
+  as proof of training-data contamination.
+- There is no stronger-model control yet. If a larger model of the same family passes the
+  twists, the variants are fair and this drop is capability-bound. That control (a 7B, or
+  gpt-4o-mini when credits allow) is the most valuable next run.
+- One model, 7 pairs, n=5: the interval is wide, and two of the seven pairs are weak evidence
+  (see the notes above).
 
 **Read a result carefully:**
 - A drop is evidence *consistent with* pattern-matching, not proof of contamination. The
@@ -309,7 +402,10 @@ by the offline stub provider and as a sanity anchor — a real run never sees it
 - [x] 95% bootstrap confidence intervals on pass@k (tasks and samples resampled)
 - [x] Counterfactual contamination probe: 7 matched pairs, twists machine-validated
 - [x] Benchmark self-validation tests (every reference passes; every canonical solution fails its twist)
-- [ ] Run the probe against a real model and record the result
+- [x] OpenAI-compatible provider (local Ollama / llama.cpp, hosted free tiers) with `n`-ignoring-server handling and 429 backoff
+- [x] Run the full eval and the contamination probe against a real model (qwen2.5-coder:1.5b), reports archived
+- [ ] Probe control: run a stronger model (a 7B, or gpt-4o-mini) to test whether the twists are fair
+- [ ] Re-run gpt-4o-mini on the full set and archive its report
 - [ ] Time-windowed / private held-out contamination controls (needs post-training-cutoff problems)
 - [ ] Test-quality measurement (mutation testing: do the hidden tests catch plausible wrong code?)
 - [ ] Richer failure taxonomy (wrong-output vs exception-type clustering; the failing assertion is recorded today)

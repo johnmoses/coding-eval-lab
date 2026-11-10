@@ -1,0 +1,238 @@
+{
+  "generated_at": "2026-11-10T09:38:28+00:00",
+  "meta": {
+    "provider": "openai-compatible",
+    "model": "qwen2.5-coder:1.5b",
+    "base_url": "http://localhost:11434/v1",
+    "num_tasks": 16,
+    "difficulty": "all",
+    "n_samples": 5,
+    "timeout_s": 5.0,
+    "stub_fail_rate": null
+  },
+  "aggregate": {
+    "pass@1": 0.875,
+    "pass@5": 0.9375
+  },
+  "aggregate_ci95": {
+    "pass@1": [
+      0.7125,
+      0.9875
+    ],
+    "pass@5": [
+      0.8125,
+      1.0
+    ]
+  },
+  "failure_breakdown": {
+    "error": 1,
+    "fail": 9
+  },
+  "tasks": [
+    {
+      "task_id": "sum_list",
+      "n": 5,
+      "c": 5,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 5
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "is_palindrome",
+      "n": 5,
+      "c": 5,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 5
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "fizzbuzz",
+      "n": 5,
+      "c": 5,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 5
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "two_sum",
+      "n": 5,
+      "c": 4,
+      "pass_rate": 0.8,
+      "pass@1": 0.8,
+      "status_counts": {
+        "pass": 4,
+        "error": 1
+      },
+      "sample_failure": "def two_sum(nums: List[int], target: int) -> Tuple[int, int]: | NameError: name 'Tuple' is not defined. Did you mean: 'tuple'?",
+      "sample_failure_code": "from typing import List\n\ndef two_sum(nums: List[int], target: int) -> Tuple[int, int]:\n    num_indices = {}\n    \n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in num_indices:\n            return (num_indices[complement], i)\n        num_indices[num] = i\n    \n    raise ValueError(\"No two sum solution found\")"
+    },
+    {
+      "task_id": "count_vowels",
+      "n": 5,
+      "c": 5,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 5
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "flatten",
+      "n": 5,
+      "c": 5,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 5
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "gcd",
+      "n": 5,
+      "c": 5,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 5
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "unique_sorted",
+      "n": 5,
+      "c": 5,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 5
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "title_case",
+      "n": 5,
+      "c": 5,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 5
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "max_subarray",
+      "n": 5,
+      "c": 5,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 5
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "roman_to_int",
+      "n": 5,
+      "c": 3,
+      "pass_rate": 0.6,
+      "pass@1": 0.6,
+      "status_counts": {
+        "pass": 3,
+        "fail": 2
+      },
+      "sample_failure": "assert roman_to_int('IV') == 4 | AssertionError",
+      "sample_failure_code": "def roman_to_int(s: str) -> int:\n    roman_values = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    return sum(roman_values[letter] if letter in roman_values else -roman_values[letter] for letter in s)"
+    },
+    {
+      "task_id": "merge_intervals",
+      "n": 5,
+      "c": 5,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 5
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "is_valid_parens",
+      "n": 5,
+      "c": 5,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 5
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "atoi",
+      "n": 5,
+      "c": 0,
+      "pass_rate": 0.0,
+      "pass@1": 0.0,
+      "status_counts": {
+        "fail": 5
+      },
+      "sample_failure": "assert atoi('-91283472332') == -2147483648 | AssertionError",
+      "sample_failure_code": "def atoi(s):\n    # Skip leading whitespaces\n    i = 0\n    while i < len(s) and s[i] in ' \\t\\n':\n        i += 1\n    \n    # Check for sign\n    negative = False\n    if i < len(s) and s[i] == '-':\n        negative = True\n        i += 1\n    \n    result = 0\n    while i < len(s) and s[i].isdigit():\n        digit = ord(s[i]) - ord('0')\n        # Clamp to 32-bit signed range\n        if (negative and -result <= int('-' + str(result * 10 + digit))) or (not negative and result >= int(str(result * 10 + digit))):\n            return 0\n        result = result * 10 + digit\n        i += 1\n    \n    return -result if negative else result"
+    },
+    {
+      "task_id": "longest_unique_substring",
+      "n": 5,
+      "c": 5,
+      "pass_rate": 1.0,
+      "pass@1": 1.0,
+      "status_counts": {
+        "pass": 5
+      },
+      "sample_failure": "",
+      "sample_failure_code": ""
+    },
+    {
+      "task_id": "spiral_order",
+      "n": 5,
+      "c": 3,
+      "pass_rate": 0.6,
+      "pass@1": 0.6,
+      "status_counts": {
+        "fail": 2,
+        "pass": 3
+      },
+      "sample_failure": "assert spiral_order([[1,2,3],[4,5,6],[7,8,9]]) == [1,2,3,6,9,8,7,4,5] | AssertionError",
+      "sample_failure_code": "def spiral_order(matrix):\n    if not matrix:\n        return []\n    \n    m, n = len(matrix), len(matrix[0])\n    result = []\n    up, down = 0, m - 1\n    left, right = 0, n - 1\n    \n    while up <= down and left <= right:\n        # Right direction\n        for i in range(left, right + 1):\n            result.append(matrix[up][i])\n        up += 1\n        \n        # Down direction\n        if up <= down:\n            for i in range(up, down + 1):\n                result.append(matrix[i][right])\n            right -= 1\n        \n        # Left direction\n        if left <= right:\n            for i in range(right, left - 1, -1):\n                result.append(matrix[down][i])\n            down -= 1\n        \n        # Up direction\n        if up <= down:\n            for i in range(down, up - 1, -1):\n                result.append(matrix[i][left])\n            left += 1\n    \n    return result"
+    }
+  ],
+  "difficulty_breakdown": {
+    "easy": {
+      "tasks": 10,
+      "mean_pass@1": 0.98
+    },
+    "hard": {
+      "tasks": 6,
+      "mean_pass@1": 0.7
+    }
+  }
+}

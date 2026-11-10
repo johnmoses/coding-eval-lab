@@ -25,6 +25,7 @@ from harness.passk import (
     bootstrap_pass_at_k_ci,
     pass_at_k,
 )
+from harness.generate import OpenAIProvider, build_provider
 from harness.sandbox import run_candidate
 
 
@@ -188,6 +189,104 @@ def test_canonical_solution_fails_every_counterfactual_variant():
         )
         res = run_candidate(renamed, v["tests"])
         assert res.status != "pass", f"{v['task_id']}: canonical solution still passes the twist"
+
+
+# ------------------------------------------------------------------ provider robustness
+# These use a fake client, so they need no network, no API key and no openai SDK.
+class _Msg:
+    def __init__(self, text):
+        self.content = text
+
+
+class _Choice:
+    def __init__(self, text):
+        self.message = _Msg(text)
+
+
+class _Resp:
+    def __init__(self, k):
+        self.choices = [_Choice("```python\ndef f():\n    return 1\n```") for _ in range(k)]
+
+
+class _FakeCompletions:
+    """Stands in for client.chat.completions. `honors_n=False` mimics servers (e.g.
+    Ollama's /v1) that ignore `n` and return a single choice per call."""
+
+    def __init__(self, honors_n=True, script=None):
+        self.honors_n = honors_n
+        self.script = list(script or [])
+        self.calls = 0
+
+    def create(self, **kw):
+        self.calls += 1
+        if self.script:
+            item = self.script.pop(0)
+            if isinstance(item, Exception):
+                raise item
+        return _Resp(kw["n"] if self.honors_n else 1)
+
+
+def _provider_with(fake):
+    p = OpenAIProvider(retry_base_delay=0.0)
+    p._client = type("C", (), {"chat": type("Ch", (), {"completions": fake})()})()
+    return p
+
+
+def test_provider_loops_when_server_ignores_n():
+    """The silent-corruption case: a server that ignores `n` must still yield exactly n
+    samples, otherwise pass@k is computed from a single sample."""
+    fake = _FakeCompletions(honors_n=False)
+    out = _provider_with(fake).sample("t\nprompt", 4)
+    assert len(out) == 4 and fake.calls == 4
+    assert all(c.startswith("def f()") for c in out)  # code fence stripped
+
+
+def test_provider_uses_one_call_when_server_honors_n():
+    fake = _FakeCompletions(honors_n=True)
+    assert len(_provider_with(fake).sample("t\nprompt", 4)) == 4
+    assert fake.calls == 1
+
+
+def test_provider_retries_transient_rate_limit():
+    class RateLimitError(Exception):  # matched by class name, like the SDK's
+        pass
+
+    fake = _FakeCompletions(script=[RateLimitError("429 slow down")])
+    assert len(_provider_with(fake).sample("t\nprompt", 2)) == 2
+    assert fake.calls == 2  # one failure, one success
+
+
+def test_provider_does_not_retry_exhausted_quota():
+    """An empty quota arrives as a 429 too, but waiting never fixes it, so fail fast."""
+
+    class RateLimitError(Exception):
+        code = "insufficient_quota"
+
+    fake = _FakeCompletions(script=[RateLimitError("You exceeded your current quota")])
+    try:
+        _provider_with(fake).sample("t\nprompt", 2)
+    except RateLimitError:
+        assert fake.calls == 1
+        return
+    raise AssertionError("expected the quota error to propagate")
+
+
+def test_provider_gives_clear_error_when_key_missing():
+    p = OpenAIProvider(api_key_env="__NO_SUCH_KEY_VAR__")
+    try:
+        p._ensure()
+    except RuntimeError as e:
+        assert "__NO_SUCH_KEY_VAR__" in str(e)
+        return
+    raise AssertionError("expected RuntimeError for a missing key")
+
+
+def test_compatible_provider_requires_base_url():
+    try:
+        build_provider("openai-compatible", {}, model="m")
+    except ValueError:
+        return
+    raise AssertionError("expected ValueError without base_url")
 
 
 # --------------------------------------------------------------------------- runner
